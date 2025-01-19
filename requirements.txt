@@ -1,0 +1,4 @@
+python-dotenv
+composio_llamaindex
+llama-index-llms-groq
+slack_bolt
