@@ -6,27 +6,28 @@ from llama_index.llms.groq import Groq
 from dotenv import load_dotenv
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
+from datetime import datetime
 
 load_dotenv()
 
-def composio():
+def composio(text, month, year):
 
     # Initialize LLM
     llm = Groq(model="llama-3.3-70b-versatile", api_key=os.getenv("GROQ_API_KEY"))
 
     # Get Composio tools
     toolset = ComposioToolSet()
-    tools = toolset.get_tools(actions=[Action.TWITTER_USER_LOOKUP_BY_USERNAME, Action.TWITTER_BOOKMARKS_BY_USER, Action.TWITTER_RECENT_SEARCH, Action.TAVILY_TAVILY_SEARCH, Action.FIRECRAWL_SCRAPE_EXTRACT_DATA_LLM])
+    tools = toolset.get_tools(actions=[Action.TWITTER_RECENT_SEARCH, Action.TAVILY_TAVILY_SEARCH, Action.FIRECRAWL_SCRAPE_EXTRACT_DATA_LLM])
 
 
     prefix_messages = [
         ChatMessage(
             role="system",
                 content=(
-                """You are an advanced trend analyzer specializing in AI technology trends.
+                f"""You are an advanced trend analyzer specializing in {text}.
                     
                     Output Format:
-                    :relevant emoji: Trend Title [Trend Score: X/10] [Momentum: ↑↓→]
+                    :emoji: Trend Title [Trend Score: X/10] [Momentum: ↑↓→]
                     - Key Insight: One-line summary
                     - Evidence: Engagement metrics across platforms, do not say based on Tavily Search but suggest what kind of posts are doing well.
                     - Market Impact: Potential business implications
@@ -44,14 +45,12 @@ def composio():
                     Search Strategy:
                     - Use broad keyword clusters for Twitter search
                     - Leverage Tavily for LinkedIn professional insights
-                    - Analyze bookmark patterns for emerging topics
 
                     Rules: 
-                    1. First fetch id from the username.
-                    2. Then fetch the bookmarks from the id.
-                    3. Then based on the keywords, search twitter.
-                    4. Search for the keywords on tavily and collect all the linkedin related posts that have done well.
-                    5. Then compile all of this info, write it in the above format the correct amount of times and send it.
+                    1. Search Twitter using keywords on most recent posts
+                    2. Search Twitter using keywords on most popular posts
+                    3. Search for the keywords on tavily and collect all the linkedin related posts that have done well.
+                    4. Then compile all of this info, write it in the above format the correct amount of times and send it.
                     """
                 ),
             )
@@ -66,8 +65,7 @@ def composio():
             verbose=True,
         ).as_agent()
         
-    id = '@HoChris44859' #your twitter id
-    return str(agent.chat(f"What are the top 3 latest trends within artificial intelligence from twitter from my bookmarks, search and linkedin, my id is {id}."))
+    return str(agent.chat(f"What are 3 of the latest trends in {month}, {year} regarding {text} based on twitter and linkedin?"))
 
 
 # # Old non Bolt Slack stuff
@@ -97,8 +95,16 @@ app = App(token=os.getenv("SLACK_BOT_TOKEN"))
 @app.message("trendfinder")
 def message_hello(message, say):
     # say() sends a message to the channel where the event was triggered
-    say("Sure! Give me ne second while I search the web...")
-    output_text = composio()
+
+    print(message)
+    print(message["text"])
+    text = message["text"].replace('trendfinder', '').strip()
+    say(f"Sure! Give me a couple seconds while I search the web for {text}...")
+
+    current_month = datetime.now().month
+    current_year = datetime.now().year
+
+    output_text = composio(text, current_month, current_year)
     say(output_text)
 
 # Start your app
