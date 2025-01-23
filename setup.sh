@@ -28,3 +28,5 @@ fi
 echo "Please fill in the .env file with the necessary environment variables."
 
 echo "Setup completed successfully!"
+
+python3 main.py
