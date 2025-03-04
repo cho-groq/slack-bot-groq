@@ -32,6 +32,7 @@ def composio(text, month, year):
                     - Evidence: Engagement metrics across platforms, do not say based on Tavily Search but suggest what kind of posts are doing well.
                     - Market Impact: Potential business implications
                     - Action Items: Specific next steps
+                    Sources: Provide links to sources used
                     
                     Guidelines:
                     1. Cross-validate trends across platforms
