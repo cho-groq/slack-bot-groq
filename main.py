@@ -95,12 +95,24 @@ app = App(token=os.getenv("SLACK_BOT_TOKEN"))
 # visit https://tools.slack.dev/bolt-python/api-docs/slack_bolt/kwargs_injection/args.html
 @app.message("trendfinder")
 def message_hello(message, say):
-    # say() sends a message to the channel where the event was triggered
+    if message.get("subtype") == "bot_message":
+        return  # Ignore bot messages to prevent infinite loops
+    
+    text = message["text"].strip()
+    
+    # Ensure "trendfinder" is the first word
+    if not text.lower().startswith("trendfinder"):
+        say("Please format your message as: trendfinder <keywords>")
+        return
 
-    print(message)
-    print(message["text"])
-    text = message["text"].replace('trendfinder', '').strip()
-    say(f"Sure! Give me a couple seconds while I search the web for {text}...")
+    # Remove all instances of "trendfinder"
+    text = text.replace("trendfinder", "").strip()
+
+    if not text:  # If nothing remains, exit early
+        say("Please format your message as: trendfinder <keywords>")
+        return
+
+    say(f"Sure! Give me a couple of seconds while I search the web for {text}...")
 
     current_month = datetime.now().month
     current_year = datetime.now().year
