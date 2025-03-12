@@ -1,3 +1,4 @@
+composio-core==0.7.7
 python-dotenv
 composio_llamaindex
 llama-index-llms-groq
